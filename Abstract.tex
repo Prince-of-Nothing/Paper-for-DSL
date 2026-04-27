@@ -1,0 +1,205 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{mathptmx}
+\usepackage[left=2.5cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{titlesec}
+\usepackage{indentfirst}
+
+
+\usepackage{fancyhdr}
+
+% Set up the page style
+\pagestyle{fancy}
+\fancyhf{} % Clear all default header and footer fields
+
+% --- HEADER SETUP ---
+% Left header: The logo (adjust the height and filename as needed)
+\fancyhead[L]{\includegraphics[height=1.5cm]{utm_conference_logo.png}}
+% Center header: The italicized conference text
+\fancyhead[C]{\textit{Technical Scientific Conference of Undergraduate, Master and PhD Students,\\[0.2em] Technical University of Moldova}}
+
+% --- FOOTER SETUP ---
+% Center footer: The location, date, volume, and page number
+\fancyfoot[C]{\textit{Chisinau, May 13-16, 2026, Vol. 1}\\[0.2em] - \thepage\ -}
+
+% --- LINE SETUP ---
+% Add a horizontal line below the header and above the footer
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+% Increase the header height to accommodate the logo and two lines of text without overlapping
+\setlength{\headheight}{45.0pt}
+\setlength{\headsep}{0.5cm} % Space between header and text
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0pt}
+\setstretch{1.0}
+\emergencystretch=3em
+\urlstyle{same}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue,citecolor=black}
+
+\titleformat{\section}{\normalfont\bfseries\fontsize{12pt}{14pt}\selectfont}{}{0pt}{\hspace*{1.25cm}}
+\titlespacing*{\section}{0pt}{\baselineskip}{0pt}
+\titleformat{\subsection}{\normalfont\bfseries\fontsize{12pt}{14pt}\selectfont}{}{0pt}{\hspace*{1.25cm}}
+\titlespacing*{\subsection}{0pt}{\baselineskip}{0pt}
+\captionsetup[table]{font={bf,small},justification=centering}
+\makeatletter
+\renewcommand{\@biblabel}[1]{#1.}
+\makeatother
+
+\lstset{
+  basicstyle=\ttfamily\fontsize{10pt}{11pt}\selectfont,
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  xleftmargin=1em,
+  xrightmargin=1em
+}
+
+\begin{document}
+
+\begin{center}
+{\fontsize{14pt}{16pt}\selectfont\textbf{SOLESCRIPT -- A DOMAIN-SPECIFIC LANGUAGE FOR PATIENT-SPECIFIC ORTHOPEDIC FOOTWEAR DESIGN}}\\[0.8em]
+{\fontsize{12pt}{14pt}\selectfont\textbf{Daniel MOISEI, Alexandrina CIUR, Corina CO\c{S}NEANU, Dana ROMANOV, Dinu PLE\c{S}U}}\\[0.5em]
+{\fontsize{10pt}{12pt}\selectfont\textit{Department of Software Engineering, FAF-241, Faculty of Computers, Informatics and Microelectronics, Technical University of Moldova, Chi\c{s}in\u{a}u, Republic of Moldova}}\\[0.3em]
+{\fontsize{10pt}{12pt}\selectfont *Corresponding author: Daniel Moisei, e-mail: daniel.moisei@isa.utm.md}\\[0.3em]
+{\fontsize{10pt}{12pt}\selectfont Tutor/coordinator: Dumitru CIORB\u{A}, Dean of the Faculty of Computers, Informatics and Microelectronics, Associate Professor, PhD, Technical University of Moldova}
+\end{center}
+
+\noindent\textit{\textbf{Abstract.} The production of custom therapeutic footwear currently suffers from a disconnect between clinical diagnoses and digital manufacturing, often forcing orthopedic technicians to manually manipulate complex 3D meshes in standard CAD software. This research bridges this gap through the development of SoleScript, a declarative system that enables technicians to specify foot corrections using standard clinical medical terminology—such as heel cup depth and metatarsal relief—rather than general engineering parameters. The methodology involved designing a formal grammar processed by a dependency-free Python recursive-descent parser and semantic analyzer, which translates high-level anatomical declarations into reproducible digital models. The results demonstrate that the language successfully codifies tacit clinical knowledge into text-based, version-controllable prescription files, automating the geometric modification of 3D foot scans and supporting the extraction of 2D manufacturing patterns. Ultimately, this approach eliminates the need for advanced 3D modeling skills, significantly improving the repeatability of therapeutic prescriptions, facilitating iterative adjustments, and offering a scalable digital workflow for orthopedic clinics.}\\[0.5em]
+\noindent\textit{\textbf{Keywords:} clinical terminology, domain-specific language, geometric transformation, parametric modeling, pattern generation.}
+\section{Introduction}
+Orthopedic footwear is produced for patients whose conditions cannot be addressed by standard shoes. In practice, the workflow often combines medical judgment, manual craftsmanship, and isolated digital tools, which makes the process difficult to standardize. The Moldovan regulatory framework also treats orthopedic footwear as an individualized assistive product, reinforcing the need for patient-specific rather than template-based design \cite{lege}.
+
+The main report was grounded in two practical interviews: one with a 3D scanning technician who demonstrated the structured-light scanning workflow, and one with a domain specialist who compared standardized boot production with therapeutic footwear. Both discussions pointed to the same conclusion: standard boots benefit from templates, while therapeutic footwear remains highly variable and therefore needs a flexible parameter-driven description.
+
+SoleScript was designed to make this workflow more explicit and reproducible. Instead of expressing corrections through low-level mesh edits, technicians describe them in domain language. The goal is not to replace scanning or CAD software, but to provide a readable intermediate prescription that can be validated and transformed into production geometry.
+
+\section{Problem Context and Requirements}
+The observed bottleneck is not only geometry acquisition, but the translation of clinical intent into geometric operations. In practice, digital scanning and modeling are useful, yet they still require technical intervention and domain interpretation. The main report further shows that the problem sits between three knowledge domains: medical prescription, tacit technician expertise, and manufacturing execution. This creates three recurring problems: high operator dependence, weak repeatability, and poor reuse of previous prescriptions.
+
+For the prototype, four requirements were prioritized.
+
+\begin{table}[h!]
+\centering
+\caption{Core requirements for the SoleScript prototype}
+{\fontsize{10pt}{12pt}\selectfont
+\begin{tabular}{p{4.1cm}p{9.4cm}}
+\toprule
+\textbf{Requirement} & \textbf{Rationale} \\
+\midrule
+Parameterized corrections & Adjustments must be expressed in domain units such as millimeters, categories, or named options. \\
+Independent foot modeling & Left and right feet may require different corrections and must be treated separately. \\
+Textual persistence & Prescriptions should remain readable, versionable, and easy to compare across cases. \\
+Manufacturing export & The workflow must end in practical geometry outputs for downstream fabrication. \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\section{Related Approaches and Design Rationale}
+Existing tools solve adjacent parts of the problem, but not the prescription layer itself. Commercial footwear systems such as Romans CAD support specialized footwear design, while platforms such as ExactFlat focus on downstream 3D-to-2D pattern workflows \cite{romanscad,exactflat}. At the modeling level, research on domain-specific languages argues that narrow, well-structured notations can reduce accidental complexity and improve reuse in specialized workflows \cite{ameur2023methodological,dsmcore}.
+
+The design rationale of SoleScript follows that logic: the user specifies \textit{what} correction is needed, while the implementation determines \textit{how} the geometry must be transformed.
+
+\section{SoleScript Language Model}
+The repository version of SoleScript is organized around five constructs: \texttt{Foot}, \texttt{Observations}, \texttt{Last}, \texttt{Boot}, and \texttt{Export}. A \texttt{Foot} block stores measurements such as \texttt{length}, \texttt{ball\_girth}, \texttt{width}, \texttt{heel\_width}, and \texttt{arch\_height}. \texttt{Observations} records clinical context, \texttt{Last} defines the geometric base for the boot and references a previously declared foot, \texttt{Boot} lists the footwear components, and \texttt{Export} targets a declared boot and triggers pattern generation. This organization is suitable for therapeutic devices because the artifact is asymmetrical, multi-component, and often revised after fitting when new pressure points are discovered.
+
+\begin{figure}[htbp]
+\centering
+\begin{lstlisting}
+Foot patient_foot {
+  length      : 265 mm
+  ball_girth  : 245 mm
+  width       : 98 mm
+  heel_width  : 62 mm
+  arch_height : 18 mm
+}
+
+Last standard_last {
+  reference_foot : patient_foot
+  heel_height    : 22 mm
+  toe_spring     : 10 mm
+  width_fitting  : 98 mm
+}
+
+Boot orthopedic_boot {
+  reference_last : standard_last
+  Outsole  { }
+  Insole   { }
+  Vamp     { }
+  Tongue   { }
+  Quarter  { }
+  ToeBox   { }
+  Heel     { }
+  Shank    { }
+  Counter  { }
+  Lining   { }
+}
+
+Export orthopedic_boot
+\end{lstlisting}
+\caption{Example of a SoleScript prescription file.}
+\label{fig:solescript_example}
+\end{figure}
+
+The syntax is intentionally restrictive. The language is case-sensitive, uses explicit named blocks, and excludes general-purpose control flow. In the current grammar, the parser handles 16 formal rules, while the semantic analyzer enforces domain constraints such as unique declarations, valid references, positive measurements, mandatory foot parameters, and correct boot-to-last dependencies.
+
+\section{Implementation Architecture}
+The repository implementation uses a standalone Python parser with no external runtime dependencies, supported by an ANTLR4 grammar as a formal source of truth. The pipeline contains a tokenizer, a recursive-descent parser, typed abstract syntax tree nodes, and a semantic analyzer that validates domain-specific rules. The repository also includes ANTLR-generated files as an alternative parser path and a Visual Studio Code extension for syntax highlighting of \texttt{.sole} files.
+
+The workflow can be summarized in four stages: writing a \texttt{.sole} description, lexical and syntactic analysis, semantic validation, and export of the declared boot for downstream 2D pattern generation. In its current public form, the repository emphasizes language design and validation rather than a finished manufacturing back end. A future extension concerns flattening and planar development, where recent geometric research may inform a more complete 3D-to-2D pipeline \cite{flatten2025}.
+
+\section{Benefits and Limitations}
+
+The best thing about SoleScript is that it makes it very clear what the design intent is in writing, which is just a series of manual changes that no one writes down. This makes it easier to look over the design again and use it again. For example, a technician can look at two prescriptions. You can compare them directly, use an old configuration again, or make a set of templates that have already been tested for common problems. This is very useful when you're trying to get the fit right and a patient comes back with a problem in a certain area. You can change the prescription without having to start from scratch.
+
+SoleScript has some problems right now. It needs to be tested with real patients first to make sure it works well. Second, even though the language can already be used to make 2D patterns, it isn't connected to the manufacturing process yet, so it can't be used as a full system for making things. SoleScript should not be seen as a finished system that is ready to be used in business. Instead, it should be seen as a prototype and a proposal for how work can be done.
+
+
+\section{Conclusions}
+SoleScript Provides a New Practical Approach to Designing Therapeutic Footwear by Writing Clear and Structured Prescriptions.
+
+Using SoleScript, technicians can create simple written instructions using simple medical terminology as opposed to using complex 3D CAD systems. With this simplified process, it is easier to understand, reduces the technical skill required to perform the work and allows the written instruction to be easily reused, compared and improved upon, providing for greater consistency and standardization.
+
+Prescribing with SoleScript allows technicians to complete work faster and reduce their chances of making a mistake due to poor communication between the specialist and technician.
+
+SoleScript also provides technicians with the ability to make separate adjustments for each foot of a patient; this is especially critical in orthopedic care where slight modifications to a product can greatly impact comfort and overall health.
+
+SoleScript is still in its prototype phase and will require additional validation through real patient trials and integration within full manufacturing systems.Future work should focus on enhancing the 3D to 2D conversion capabilities as well as helping with the overall integration of SoleScript within real production environments.
+
+In conclusion, SoleScript represents a significant progression toward a more digitally and standardized workflow within the orthopedic footwear business. Not only can SoleScript make the design process more efficient, but it is also reasonably accurate, and would provide an easier platform for scaling its use across modern clinic operations.
+
+\begin{thebibliography}{99}
+\bibitem{lege}\label{lege-ref}
+GOVERNMENT OF THE REPUBLIC OF MOLDOVA. Decision No.~567/2011 on orthopedic assistance and related rehabilitation services.; 2011. \url{https://www.legis.md/cautare/getResults?doc_id=121220&lang=ro} (accessed 2026-04-07).
+
+\bibitem{romanscad}\label{romanscad-ref}
+Roman CAD Software 2D Footwear. Roman CAD. \url{https://www.romans-cad.com/en} (accessed 2026-04-07).
+
+\bibitem{exactflat}\label{exactflat-ref}
+ADMIN. How ExactFlat for Rhino 3D Transforms 3D to 2D Pattern Making - Style3D Blog. \url{https://www.style3d.com/blog/how-exactflat-for-rhino-3d-transforms-3d-to-2d-pattern-making/} (accessed 2026-04-07).
+
+\bibitem{ameur2023methodological}\label{ameur-ref}
+ENGLEBERT, V.; BELARBI, M. A Methodological Framework for SPL Engineering from DSML. In Model-Driven Engineering and Software Development; Pires, L. F., Hammoudi, S., Seidewitz, E., Eds.; Communications in Computer and Information Science; Springer Nature Switzerland: Cham, 2023; Vol.~1708, pp.~179--202. \url{https://doi.org/10.1007/978-3-031-38821-7_9}.
+
+\bibitem{dsmcore}\label{dsmcore-ref}
+TOLVANEN, J.-P.; KELLY, S. Defining Domain-Specific Modeling Languages to Automate Product Derivation: Collected Experiences. In Software Product Lines; Obbink, H., Pohl, K., Eds.; Hutchison, D., Kanade, T., Kittler, J., Kleinberg, J. M., Mattern, F., Mitchell, J. C., Naor, M., Nierstrasz, O., Pandu Rangan, C., Steffen, B., Sudan, M., Terzopoulos, D., Tygar, D., Vardi, M. Y., Weikum, G., Series Eds.; Lecture Notes in Computer Science; Springer Berlin Heidelberg: Berlin, Heidelberg, 2005; Vol.~3714, pp.~198--209. \url{https://doi.org/10.1007/11554844_22}.
+
+\bibitem{flatten2025}\label{flatten-ref}
+YAVUZ, E.; YAZICI, R. Accelerated Planar Development of Convex Free-Form Mesh Patches Using a Variable Step-Size Energy Dissipation Approach. Appl. Comput. Syst. 2025, 30 (1), pp.~133--146. \url{https://doi.org/10.2478/acss-2025-0015}.
+\end{thebibliography}
+
+\end{document}
